@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useParkingRealtime } from './useRealtime';
 
@@ -15,26 +15,7 @@ export function useParkingData(templeId: string | null) {
   const [parkingData, setParkingData] = useState<ParkingData[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (templeId) {
-      loadParkingData();
-    }
-  }, [templeId]);
-
-  // Real-time updates
-  useParkingRealtime(templeId || '', (data) => {
-    setParkingData(prev => {
-      const index = prev.findIndex(p => p.id === data.id);
-      if (index >= 0) {
-        const updated = [...prev];
-        updated[index] = data;
-        return updated;
-      }
-      return [...prev, data];
-    });
-  });
-
-  const loadParkingData = async () => {
+  const loadParkingData = useCallback(async () => {
     if (!templeId) return;
 
     try {
@@ -51,7 +32,36 @@ export function useParkingData(templeId: string | null) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [templeId]);
+
+  useEffect(() => {
+    if (templeId) {
+      loadParkingData();
+    }
+  }, [templeId, loadParkingData]);
+
+  // Real-time updates
+  useParkingRealtime(
+    templeId || '',
+    (data) => {
+      const next = data as ParkingData;
+
+      setParkingData((prev) => {
+        const index = prev.findIndex((parking) => parking.id === next.id);
+
+        if (index >= 0) {
+          const updated = [...prev];
+          updated[index] = next;
+          return updated;
+        }
+
+        return [...prev, next];
+      });
+    },
+    (deletedId) => {
+      setParkingData((prev) => prev.filter((parking) => parking.id !== deletedId));
+    }
+  );
 
   const totalAvailable = parkingData.reduce((sum, p) => sum + p.available_spots, 0);
   const totalSpots = parkingData.reduce((sum, p) => sum + p.total_spots, 0);

@@ -15,6 +15,13 @@ interface RealtimeOptions {
   onChange?: (payload: RealtimePayload) => void;
 }
 
+const getRecord = (value: unknown): Record<string, unknown> | null => {
+  if (value && typeof value === 'object') {
+    return value as Record<string, unknown>;
+  }
+  return null;
+};
+
 export function useRealtime({
   table,
   enabled = true,
@@ -58,18 +65,19 @@ export function useRealtime({
 
     realtimeChannel.on('postgres_changes', config, (payload) => {
       console.log('Realtime update:', payload);
+      const typedPayload = payload as RealtimePayload;
 
-      handlersRef.current.onChange?.(payload as RealtimePayload);
+      handlersRef.current.onChange?.(typedPayload);
 
-      switch (payload.eventType) {
+      switch (typedPayload.eventType) {
         case 'INSERT':
-          handlersRef.current.onInsert?.(payload as RealtimePayload);
+          handlersRef.current.onInsert?.(typedPayload);
           break;
         case 'UPDATE':
-          handlersRef.current.onUpdate?.(payload as RealtimePayload);
+          handlersRef.current.onUpdate?.(typedPayload);
           break;
         case 'DELETE':
-          handlersRef.current.onDelete?.(payload as RealtimePayload);
+          handlersRef.current.onDelete?.(typedPayload);
           break;
       }
     });
@@ -96,7 +104,10 @@ export function useCrowdRealtime(templeId: string, onUpdate: (data: Record<strin
     enabled: Boolean(templeId),
     event: 'INSERT',
     filter: `temple_id=eq.${templeId}`,
-    onInsert: (payload) => onUpdate((payload.new ?? {}) as Record<string, unknown>),
+    onInsert: (payload) => {
+      const next = getRecord(payload.new);
+      if (next) onUpdate(next);
+    },
   });
 }
 
@@ -106,17 +117,39 @@ export function useQueueRealtime(bookingId: string, onUpdate: (data: Record<stri
     enabled: Boolean(bookingId),
     event: 'UPDATE',
     filter: `booking_id=eq.${bookingId}`,
-    onUpdate: (payload) => onUpdate((payload.new ?? {}) as Record<string, unknown>),
+    onUpdate: (payload) => {
+      const next = getRecord(payload.new);
+      if (next) onUpdate(next);
+    },
   });
 }
 
-export function useParkingRealtime(templeId: string, onUpdate: (data: Record<string, unknown>) => void) {
+export function useParkingRealtime(
+  templeId: string,
+  onUpsert: (data: Record<string, unknown>) => void,
+  onDelete?: (id: string) => void
+) {
   return useRealtime({
     table: 'parking_data',
     enabled: Boolean(templeId),
     event: '*',
     filter: `temple_id=eq.${templeId}`,
-    onChange: (payload) => onUpdate((payload.new ?? {}) as Record<string, unknown>),
+    onInsert: (payload) => {
+      const next = getRecord(payload.new);
+      if (next) onUpsert(next);
+    },
+    onUpdate: (payload) => {
+      const next = getRecord(payload.new);
+      if (next) onUpsert(next);
+    },
+    onDelete: (payload) => {
+      if (!onDelete) return;
+      const previous = getRecord(payload.old);
+      const id = previous?.id;
+      if (typeof id === 'string') {
+        onDelete(id);
+      }
+    },
   });
 }
 
@@ -124,6 +157,9 @@ export function useEmergencyRealtime(onNewIncident: (data: Record<string, unknow
   return useRealtime({
     table: 'emergency_incidents',
     event: 'INSERT',
-    onInsert: (payload) => onNewIncident((payload.new ?? {}) as Record<string, unknown>),
+    onInsert: (payload) => {
+      const next = getRecord(payload.new);
+      if (next) onNewIncident(next);
+    },
   });
 }

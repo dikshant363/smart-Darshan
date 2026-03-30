@@ -1,73 +1,74 @@
-# Welcome to My Smart-Darshan project
+# Smart-Darshan
+
+A Vite + React + TypeScript app for temple visit management (booking, crowd, queue, parking, emergency support).
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/8bf1e2b6-d5dc-4af9-a65f-4c1f109127a3
+**Lovable URL**: https://lovable.dev/projects/8bf1e2b6-d5dc-4af9-a65f-4c1f109127a3
 
-## How can I edit this code?
+## Run locally
 
-There are several ways of editing your application.
+### Requirements
+- Node.js 18+ (Node.js 20+ recommended)
+- npm 9+
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/8bf1e2b6-d5dc-4af9-a65f-4c1f109127a3) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
+### Setup and start
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# 1) install dependencies
+npm install
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# 2) run development server
 npm run dev
+
+# 3) build for production (sanity check)
+npm run build
+
+# 4) preview production build (optional)
+npm run preview
 ```
 
-**Edit a file directly in GitHub**
+## Common issues and fixes
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### `vite: not found`
+This means dependencies were not installed yet (or `node_modules` was removed). Run:
 
-**Use GitHub Codespaces**
+```sh
+npm install
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### `Cannot find package '@eslint/js'` while running lint
+This is also caused by missing dependencies. Reinstall packages:
 
-## What technologies are used for this project?
+```sh
+npm install
+```
 
-This project is built with:
+### Lockfile conflicts (`package-lock.json` vs `bun.lockb`)
+Use **npm** for this repo to keep installs consistent with project scripts.
+
+## Editing options
+
+### Use Lovable
+Visit the [Lovable project](https://lovable.dev/projects/8bf1e2b6-d5dc-4af9-a65f-4c1f109127a3) and prompt changes directly.
+
+### Use your IDE
+Clone the repository, edit locally, and push changes.
+
+## Tech stack
 
 - Vite
-- TypeScript
 - React
+- TypeScript
 - shadcn-ui
 - Tailwind CSS
+- Supabase
 
-## How can I deploy this project?
+## Deployment
 
-Simply open [Lovable](https://lovable.dev/projects/8bf1e2b6-d5dc-4af9-a65f-4c1f109127a3) and click on Share -> Publish.
+Use Lovable: **Share → Publish**.
 
-## Can I connect a custom domain to my Lovable project?
+## Custom domain
 
-Yes, you can!
+You can connect a custom domain from Lovable settings.
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Reference: https://docs.lovable.dev/features/custom-domain#setting-up-a-custom-domain
